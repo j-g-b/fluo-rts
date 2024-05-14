@@ -3,6 +3,9 @@ require(readr)
 require(nnls)
 
 #
+non_negative <- T
+
+#
 source_eem_data <- readr::read_csv("source_eems.csv", name_repair = "minimal")
 unknown_eem_data <- readr::read_csv("unknown_eems.csv")
 source_labels <- colnames(source_eem_data)
@@ -33,7 +36,11 @@ for(j in 1:ncol(unknown_eem_data)){
   y <- y[incl_rows]
   
   #
-  coefs <- nnls::nnls(X, y)$x
+  if(non_negative){
+    coefs <- nnls::nnls(X, y)$x
+  } else {
+    coefs <- solve(crossprod(X))%*%crossprod(X, y)
+  }
   
   #
   source_contributions[j, ] <- G%*%coefs
